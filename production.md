@@ -1,5 +1,7 @@
 # Production Engineering & MLOps Blueprint
 
+> **Status note (verified against the repo):** this document is aspirational — the current system is a single local FastAPI process. Three claims below are stale relative to the code: `main.py` is already a shared library (not a CLI to replace); the model is a Poisson `HistGradientBoostingRegressor` with a ÷1e6 target transform (not `log1p` `LinearRegression`); evaluation is a seeded 80/20 split at MAE £8.1M / R² 0.44 (which does satisfy the §1 quality gate of R² ≥ 0.40, MAE ≤ £9M). The real layout is flat `*.py` + `static/`, not `src/` + `app/` packages.
+
 A comprehensive engineering guide for transitioning the **Premier League Transfer Market Value Predictor** from a local CLI application to an enterprise-grade, high-availability production service.
 
 ---
@@ -79,7 +81,7 @@ flowchart TD
 
 ## 4. Serving Architecture: FastAPI REST Microservice
 
-To serve high-concurrency requests, replace `main.py` CLI with an asynchronous **FastAPI** service:
+To serve high-concurrency requests, the single-process **FastAPI** service (`app.py`) would be split into independently scalable tiers:
 
 ### 4.1 Production API Implementation Pattern
 ```python
