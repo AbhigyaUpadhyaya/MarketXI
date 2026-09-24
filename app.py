@@ -59,14 +59,15 @@ def record_to_dict(record: pd.Series) -> dict:
     tm_club_id = record.get("transfermarkt_club_id")
     fpl_logo = clean_nan(record.get("fpl_team_logo_url"))
     
-    club_logo_url = None
-    if pd.notna(tm_club_id) and str(tm_club_id).strip() != "" and str(tm_club_id).strip().lower() != "nan":
+    # Badge must match the *displayed* (current FPL) team. The Transfermarkt
+    # club id can be stale after transfers (e.g. Villa id on a Chelsea
+    # player), so the FPL badge leads and TM is only a fallback.
+    club_logo_url = fpl_logo
+    if not club_logo_url and pd.notna(tm_club_id) and str(tm_club_id).strip() != "" and str(tm_club_id).strip().lower() != "nan":
         try:
             club_logo_url = f"https://tmssl.akamaized.net/images/wappen/head/{int(float(tm_club_id))}.png"
         except (ValueError, TypeError):
-            club_logo_url = fpl_logo
-    elif fpl_logo:
-        club_logo_url = fpl_logo
+            club_logo_url = None
 
     minutes = clean_nan(record.get("total_minutes")) or clean_nan(record.get("fpl_minutes"))
     goals = clean_nan(record.get("total_goals")) if clean_nan(record.get("total_goals")) is not None else clean_nan(record.get("fpl_goals"))
