@@ -75,6 +75,10 @@ def load_model():
     return None
 
 def find_player(df, query):
+    # Empty/unusable dataset (e.g. CSVs missing in a deploy) -> no matches,
+    # never a KeyError. Callers already treat empty as "not found".
+    if df is None or df.empty or "player" not in df.columns:
+        return pd.DataFrame()
     q = normalize_name(query)
     df["_norm"] = df["player"].astype(str).map(normalize_name)
     df["_known"] = df["known_name"].astype(str).map(normalize_name)

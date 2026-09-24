@@ -109,7 +109,8 @@ def startup_event():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "data_loaded": DATASET is not None, "model_loaded": MODEL is not None}
+    usable = DATASET is not None and not DATASET.empty and "player" in DATASET.columns
+    return {"status": "ok", "data_loaded": usable, "model_loaded": MODEL is not None}
 
 @app.get("/api/top-scorers")
 def get_top_scorers():
@@ -170,6 +171,9 @@ def get_leaderboard(sort_by: str = "market_value", order: str = "desc", limit: i
 def get_player(player_id: str):
     if DATASET is None: raise HTTPException(status_code=500, detail="Dataset not loaded")
     
+    if DATASET is None or DATASET.empty or "player_id" not in DATASET.columns:
+        raise HTTPException(status_code=404, detail="Player not found")
+
     player_history = DATASET[DATASET["player_id"].astype(str) == str(player_id)]
     if player_history.empty: raise HTTPException(status_code=404, detail="Player not found")
         
