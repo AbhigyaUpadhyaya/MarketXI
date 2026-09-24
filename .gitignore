@@ -102,5 +102,10 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 
-# Graphify knowledge-graph output
 graphify-out/
+.claude/
+.clinerules/
+.opencode/
+frontend-design/
+data/
+.gitignore
