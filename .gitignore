@@ -51,11 +51,6 @@ coverage/
 *.sqlite3
 *.db
 
-# Data Storage Directories (Keep directories via .gitkeep, ignore data artifacts)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
 
 # Machine Learning Models & Training Artifacts
 models/*.pkl
@@ -64,6 +59,11 @@ models/*.csv
 !models/.gitkeep
 # Keep model metadata for performance tracking in version control
 !models/model_metadata.json
+# Runtime artifacts: the deployed app reads these directly (no DB at runtime)
+!data/raw/player_market_values.csv
+!data/raw/seasonal_player_stats.csv
+!models/transfer_value_model.joblib
+!models/transfer_value_model.pkl
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
