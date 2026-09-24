@@ -1,18 +1,41 @@
 {
-    "model_type": "LinearRegression (log1p target transform)",
+    "model": "HistGradientBoostingRegressor",
+    "wrapper": "TransformedTargetRegressor",
     "target": "market_value_gbp",
+    "target_units": "GBP",
+    "target_transform": "scale_target: x / 1e6 (main.scale_target)",
+    "target_inverse": "inverse_scale_target: x * 1e6 (main.inverse_scale_target)",
+    "feature_columns": [
+        "position",
+        "team",
+        "age",
+        "fpl_minutes",
+        "goals_p90",
+        "assists_p90",
+        "clean_sheets_p90",
+        "saves_p90"
+    ],
     "numeric_features": [
-        "total_minutes",
-        "total_appearances",
-        "total_goals",
-        "total_assists"
+        "age",
+        "fpl_minutes",
+        "goals_p90",
+        "assists_p90",
+        "clean_sheets_p90",
+        "saves_p90"
     ],
     "categorical_features": [
         "position",
         "team"
     ],
-    "total_training_rows": 1788,
-    "mae_gbp": 8748025.071955789,
-    "rmse_gbp": 13742633.446583804,
-    "r2": 0.4378367103230085
+    "training_rows": 564,
+    "training_data_path": "data/raw/player_market_values.csv",
+    "mae": 8106035.265115062,
+    "rmse": 12407967.133167783,
+    "r2": 0.4427431271370508,
+    "md_ape_pct": 34.029944815259405,
+    "md_bias_pct": 6.383162609392907,
+    "model_files": [
+        "models/transfer_value_model.joblib",
+        "models/transfer_value_model.pkl"
+    ]
 }

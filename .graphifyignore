@@ -1,0 +1,60 @@
+# .graphifyignore — exclude noise and dependencies from Graphify indexing
+# gitignore-style patterns, matched against repo-relative paths.
+
+# Version control
+.git/
+.gitignore
+
+# Graphify output (never index own results)
+graphify-out/
+
+# Python environments & caches
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+nohup.out
+
+# Linked worktrees (duplicate trees)
+.worktrees/
+
+# Frontend dependencies & build outputs
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+package-lock.json
+
+# Data, models & binaries (large / generated)
+*.duckdb
+*.duckdb.wal
+*.sqlite
+*.sqlite3
+*.db
+data/raw/*
+data/processed/*
+models/*.pkl
+models/*.joblib
+models/*.csv
+
+# OS / editor noise
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.env.*

@@ -33,6 +33,16 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.python-version
+
+# Frontend build artifacts & dependencies (static/ is vanilla, no build step yet)
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.local
 
 # Embedded Databases & Large Binary Data Stores
 *.duckdb
@@ -67,6 +77,11 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.log
+nohup.out
+
+# Linked worktrees (separate checkouts, never commit the pointer dir)
+.worktrees/
 
 # IDEs, Editors & Operating System Files
 .vscode/
@@ -86,3 +101,6 @@ Thumbs.db
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+
+# Graphify knowledge-graph output
+graphify-out/
