@@ -253,6 +253,13 @@ body {
     white-space: nowrap;
 }
 
+.logo-mark {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .accent-icon {
     color: var(--accent-ink);
     width: 24px;

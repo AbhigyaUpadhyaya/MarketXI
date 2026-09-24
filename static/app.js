@@ -113,7 +113,7 @@ try {
     mark.setAttribute('aria-label', text);
     [...text].forEach((ch, i) => {
         const span = document.createElement('span');
-        span.className = 'char' + (i >= 8 ? ' char-accent' : '');
+        span.className = 'char' + (i >= 6 ? ' char-accent' : '');
         span.style.setProperty('--i', i);
         span.textContent = ch;
         span.setAttribute('aria-hidden', 'true');
