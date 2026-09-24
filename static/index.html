@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Market Value Predictor</title>
+
+    <!-- Theme before first paint: saved preference wins, else Light Mode.
+         System preference is never used as the default. -->
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('tvp-theme');
+                document.documentElement.setAttribute('data-theme', stored === 'dark' ? 'dark' : 'light');
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="nav-content">
+            <div class="logo" id="logoBtn" style="cursor: pointer;" role="button" tabindex="0"
+                aria-label="Back to rankings">
+                <i data-lucide="activity" class="accent-icon"></i>
+                <span id="logoWordmark" aria-label="Transfer Predictor">Transfer<span
+                        class="accent-text">Predictor</span></span>
+            </div>
+            <div class="search-container" id="searchContainer">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search player"
+                    autocomplete="off" aria-label="Search players">
+                <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+            <button id="themeToggle" class="btn-theme" aria-label="Switch to light mode" title="Theme">
+                <i data-lucide="moon" id="themeIcon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- Prominent Home Page Marquee -->
+        <div id="homeMarquee" class="marquee-wrapper hidden">
+            <h3 class="marquee-title">Top Scorers</h3>
+            <div class="marquee-viewport">
+                <div class="marquee-track" id="marqueeTrack"></div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <section id="leaderboardSection" class="leaderboard-section">
+            <div class="card">
+                <div class="leaderboard-header-row">
+                    <h2 class="section-title mb-0">Player Rankings</h2>
+                    <div class="filter-controls">
+                        <div class="select-wrapper">
+                            <i data-lucide="filter" class="filter-icon"></i>
+                            <select id="sortSelect" class="filter-select">
+                                <option value="market_value">Market Value</option>
+                                <option value="alphabetical">Alphabetical</option>
+                                <option value="appearances">Appearances</option>
+                                <option value="minutes">Minutes Played</option>
+                                <option value="assists">Assists</option>
+                                <option value="goals">Goals</option>
+                            </select>
+                        </div>
+                        <div class="seg-tabs" role="tablist" aria-label="Sort direction">
+                            <span class="seg-pill" id="segPill" aria-hidden="true"></span>
+                            <button class="seg-tab is-active" data-order="desc" role="tab" aria-selected="true"
+                                type="button">Highest first</button>
+                            <button class="seg-tab" data-order="asc" role="tab" aria-selected="false"
+                                type="button">Lowest first</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="leaderboardSkeleton" class="leaderboard-skeleton">
+                    <div class="skeleton-line skeleton-shimmer" style="height: 50px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-line skeleton-shimmer" style="height: 50px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-line skeleton-shimmer" style="height: 50px;"></div>
+                </div>
+
+                <div id="leaderboardList" class="leaderboard-list"></div>
+
+                <div id="leaderboardError" class="error-state hidden">
+                    <i data-lucide="alert-circle"></i>
+                    <p>Rankings could not be loaded. Check your connection and refresh the page.</p>
+                </div>
+
+                <div id="loadMoreContainer" class="load-more-container hidden">
+                    <button id="btnLoadMore" class="btn-secondary">
+                        <span>Show 10 More</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Player Profile: morphing dialog overlay (see app.js openProfileDialog) -->
+        <section id="profileSection" class="profile-overlay hidden" role="dialog" aria-modal="true"
+            aria-labelledby="playerName" tabindex="-1">
+            <div id="profileBackdrop" class="profile-backdrop"></div>
+            <div class="profile-sheet">
+                <div id="profileSkeleton" class="card skeleton-card">
+                <div class="skeleton-header">
+                    <div class="skeleton-avatar skeleton-shimmer"></div>
+                    <div class="skeleton-text-group">
+                        <div class="skeleton-line skeleton-shimmer" style="width: 50%;"></div>
+                        <div class="skeleton-line skeleton-shimmer" style="width: 30%;"></div>
+                    </div>
+                </div>
+                <div class="skeleton-box skeleton-shimmer"></div>
+                <div class="skeleton-box skeleton-shimmer"></div>
+            </div>
+
+            <div id="errorState" class="error-state hidden">
+                <i data-lucide="alert-circle"></i>
+                <p id="errorMessage"></p>
+            </div>
+
+            <div id="profileCard" class="card hidden">
+                <div class="profile-layout">
+                    <div class="profile-info">
+                        <div class="profile-header">
+                            <button type="button" id="photoTrigger" class="photo-trigger"
+                                aria-label="View enlarged player photo">
+                                <img id="playerPhoto" src="" alt="Player" class="player-photo">
+                            </button>
+                            <div>
+                                <h1 id="playerName" class="player-name"></h1>
+                                <div class="team-badge-row">
+                                    <img id="clubBadge" src="" alt="Club Badge" class="club-badge hidden">
+                                    <div id="playerTeam" class="player-team"></div>
+                                </div>
+                                <div id="playerMeta" class="player-meta"></div>
+                            </div>
+                        </div>
+
+                        <div id="invalidSeasonWarning" class="warning-box hidden">
+                            <i data-lucide="info"></i>
+                            <p>No valid completed season with both performance data and an actual Transfermarkt market
+                                value is available for this player.</p>
+                        </div>
+
+                        <div id="statsGrid" class="stats-grid">
+                            <div class="stat-box">
+                                <div id="statApps" class="stat-value">-</div>
+                                <div class="stat-label">APPS</div>
+                            </div>
+                            <div class="stat-box">
+                                <div id="statMins" class="stat-value">-</div>
+                                <div class="stat-label">MINS</div>
+                            </div>
+                            <div class="stat-box">
+                                <div id="statGoals" class="stat-value">-</div>
+                                <div class="stat-label">GOALS</div>
+                            </div>
+                            <div class="stat-box">
+                                <div id="statAssists" class="stat-value">-</div>
+                                <div class="stat-label">ASSISTS</div>
+                            </div>
+                        </div>
+
+                        <button id="btnCompare" class="btn-primary hidden">
+                            <i data-lucide="user-plus"></i> <span id="btnCompareText">Add to Comparison</span>
+                        </button>
+                    </div>
+
+                    <div id="valuationData" class="valuation-column hidden">
+                        <div class="val-card">
+                            <div class="val-label">Actual Market Value</div>
+                            <div id="valActual" class="val-amount"></div>
+                            <div class="val-source">Source: Transfermarkt</div>
+                        </div>
+                        <div class="val-card accent-card">
+                            <div class="val-label">Predicted Market Value</div>
+                            <div id="valPredicted" class="val-amount accent-text"></div>
+                            <div id="valDifference" class="val-diff"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- Nested photo lightbox: morphs from the profile photo -->
+        <div id="photoLightbox" class="photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="Enlarged player photo">
+            <div id="photoLightboxBackdrop" class="photo-lightbox-backdrop"></div>
+            <figure class="photo-lightbox-figure">
+                <img id="photoLarge" src="" alt="">
+            </figure>
+            <button type="button" id="photoClose" class="photo-close" aria-label="Close enlarged photo">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <!-- Line Graph Comparison Section (Max 5 Players) -->
+        <section id="comparisonSection" class="comparison-section hidden">
+            <div class="card">
+                <div class="comp-header">
+                    <h2 class="section-title mb-0">Actual vs Predicted Comparison <span id="compCount">(0/5)</span></h2>
+                    <div class="comp-actions">
+                        <button id="btnCompSearch" class="btn-text" aria-expanded="false" aria-controls="compSearchPop">
+                            <i data-lucide="search"></i> Search Player
+                        </button>
+                        <button id="btnClearComp" class="btn-text">Clear All</button>
+                    </div>
+                </div>
+                <div id="compSearchPop" class="comp-search-pop hidden" role="dialog" aria-label="Search player to compare">
+                    <input type="text" id="compSearchInput" placeholder="Search player" autocomplete="off"
+                        aria-label="Search player to compare">
+                    <div id="compSearchResults" class="comp-search-results"></div>
+                </div>
+                <div id="compTags" class="comp-tags"></div>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dock: primary app navigation -->
+    <nav class="dock" aria-label="Primary">
+        <button class="dock-btn" id="dockHome" aria-label="Rankings">
+            <i data-lucide="trophy"></i>
+            <span class="dock-label">Rankings</span>
+        </button>
+        <button class="dock-btn" id="dockSearch" aria-label="Search players">
+            <i data-lucide="search"></i>
+            <span class="dock-label">Search</span>
+        </button>
+        <button class="dock-btn" id="dockCompare" aria-label="Comparison chart">
+            <i data-lucide="scale"></i>
+            <span class="dock-label">Compare</span>
+        </button>
+    </nav>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
