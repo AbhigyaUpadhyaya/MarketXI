@@ -107,5 +107,5 @@ graphify-out/
 .clinerules/
 .opencode/
 frontend-design/
-data/
 .gitignore
+data/
